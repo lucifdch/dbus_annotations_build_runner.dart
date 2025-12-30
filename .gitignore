@@ -1,0 +1,6 @@
+.dart_tool/
+.packages
+pubspec.lock
+
+.idea/
+dbus_annotations_build_runner.iml

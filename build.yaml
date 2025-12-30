@@ -1,0 +1,9 @@
+# https://pub.dartlang.org/packages/build_config
+builders:
+  dbus_builder:
+    import: "package:dbus_annotations_build_runner/builder.dart"
+    builder_factories: [ "dbusBuilder" ]
+    build_extensions: { ".dart": [ ".dbus.g.part" ] }
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: [ "source_gen|combining_builder" ]
