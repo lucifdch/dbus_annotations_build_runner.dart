@@ -1,5 +1,5 @@
 name: dbus_annotations_build_runner
-description: A starting point for Dart libraries or applications.
+description: Automatically generate D-Bus interface code using dbus and dbus_annotations.
 version: 0.1.0
 repository: https://github.com/lucifdch/dbus_annotations_build_runner.dart
 
