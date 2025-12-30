@@ -15,7 +15,7 @@ dependencies:
   source_gen: ^4.1.1
 
   dbus: '>0.7.0 <0.8.0'
-  dbus_annotations: 0.1.0
+  dbus_annotations: any
 
 dev_dependencies:
   lints: ^6.0.0
