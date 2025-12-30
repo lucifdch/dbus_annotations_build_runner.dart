@@ -209,7 +209,7 @@ extension GeneratorService on DBusGeneratorHandler {
     }
   }
 
-  buildServiceSetProperty() {
+  void buildServiceSetProperty() {
     buffer.writeln('static Future<DBusMethodResponse> setProperty(${classInfo.className} instance, String ifaceName, String name, DBusValue value) async {');
     if (classInfo.useLog) {
       buffer.writeln('${classInfo.className}_Log.trace("setProperty -> \$ifaceName \$name \$value");');
@@ -254,7 +254,7 @@ extension GeneratorService on DBusGeneratorHandler {
     }
   }
 
-  buildServiceGetAllProperty() {
+  void buildServiceGetAllProperty() {
     buffer.writeln('static Future<DBusMethodResponse> getAllProperties(${classInfo.className} instance, String ifaceName) async {');
     buffer.writeln('${classInfo.className}_Log.trace("getAllProperties -> \$ifaceName");');
     buffer.writeln();
@@ -273,7 +273,7 @@ extension GeneratorService on DBusGeneratorHandler {
     buffer.writeln('}');
   }
 
-  buildServiceGetAllPropertyInfo(String propertyName, PropertyInfo propertyInfo) {
+  void buildServiceGetAllPropertyInfo(String propertyName, PropertyInfo propertyInfo) {
     if (propertyInfo.propertyGetInfo == null) {
       buffer.writeln('// $propertyName write only');
       return;
