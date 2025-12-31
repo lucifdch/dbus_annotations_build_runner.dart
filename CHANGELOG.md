@@ -5,3 +5,7 @@
 ## 0.1.1
 
 - Change dbus_annotations version to any
+
+## 0.1.2
+
+- Change set value add ValueNotifier

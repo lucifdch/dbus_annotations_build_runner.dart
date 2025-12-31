@@ -1,6 +1,6 @@
 name: dbus_annotations_build_runner
 description: Automatically generate D-Bus interface code using dbus and dbus_annotations.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/lucifdch/dbus_annotations_build_runner.dart
 
 environment:
@@ -16,6 +16,8 @@ dependencies:
 
   dbus: '>0.7.0 <0.8.0'
   dbus_annotations: any
+#  dbus_annotations:
+#    path: ../dbus_annotations
 
 dev_dependencies:
   lints: ^6.0.0

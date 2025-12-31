@@ -65,16 +65,30 @@ extension GeneratorClient on DBusGeneratorHandler {
     for (final p in classInfo.propertyInfoMap.entries) {
       final propertyInfo = p.value;
 
+      final DartType dartType;
+      final String propertyName;
+      final String signature;
       if (propertyInfo.propertyGetInfo != null) {
         final returnType = propertyInfo.propertyGetInfo!.property.returnType as InterfaceType;
-        buildClientLocalProperty(returnType.typeArguments.first, propertyInfo.propertyGetInfo!.propertyName, propertyInfo.propertyGetInfo!.signature);
+
+        dartType = returnType.typeArguments.first;
+        propertyName = propertyInfo.propertyGetInfo!.propertyName;
+        signature = propertyInfo.propertyGetInfo!.signature;
       } else {
-        buildClientLocalProperty(propertyInfo.propertySetInfo!.property.formalParameters.first.type, propertyInfo.propertySetInfo!.propertyName, propertyInfo.propertySetInfo!.signature);
+        dartType = propertyInfo.propertySetInfo!.property.formalParameters.first.type;
+        propertyName = propertyInfo.propertySetInfo!.propertyName;
+        signature = propertyInfo.propertySetInfo!.signature;
+      }
+
+      if (classInfo.useValueNotifier) {
+        buildClientLocalPropertyVN(dartType, propertyName, signature);
+      } else {
+        buildClientLocalProperty(dartType, propertyName, signature);
       }
     }
 
     buffer.writeln('@override');
-    buffer.writeln('void setValue(String key, DBusValue value) {');
+    buffer.writeln('void setValue(String key, DBusValue? value) {');
     if (classInfo.useLog) {
       buffer.writeln('${classInfo.className}_Log.trace("setValue -> key: \$key value: \$value");');
     }
@@ -82,10 +96,20 @@ extension GeneratorClient on DBusGeneratorHandler {
     for (final p in classInfo.propertyInfoMap.entries) {
       final propertyInfo = p.value;
 
+      final String propertyName;
+      final String signature;
       if (propertyInfo.propertyGetInfo != null) {
-        buildClientLocalPropertySetValue(propertyInfo.propertyGetInfo!.propertyName, propertyInfo.propertyGetInfo!.signature);
+        propertyName = propertyInfo.propertyGetInfo!.propertyName;
+        signature = propertyInfo.propertyGetInfo!.signature;
       } else {
-        buildClientLocalPropertySetValue(propertyInfo.propertySetInfo!.propertyName, propertyInfo.propertySetInfo!.signature);
+        propertyName = propertyInfo.propertySetInfo!.propertyName;
+        signature = propertyInfo.propertySetInfo!.signature;
+      }
+
+      if (classInfo.useValueNotifier) {
+        buildClientLocalPropertySetValueVN(propertyName, signature);
+      } else {
+        buildClientLocalPropertySetValue(propertyName, signature);
       }
     }
     buffer.writeln('default:');
@@ -108,7 +132,8 @@ extension GeneratorClient on DBusGeneratorHandler {
       buffer.writeln('${pm.type.getDisplayString()} get ${pm.displayName} => values[$index]${dbusSignatureToNative(arg)};');
     }
 
-    buffer.writeln('${classInfo.className}_${signalInfo.signalName}Signal(DBusSignal signal) : super(sender: signal.sender, path: signal.path, interface: signal.interface, name: signal.name, values: signal.values);');
+    buffer.writeln(
+        '${classInfo.className}_${signalInfo.signalName}Signal(DBusSignal signal) : super(sender: signal.sender, path: signal.path, interface: signal.interface, name: signal.name, values: signal.values);');
     buffer.writeln('}');
   }
 
@@ -155,7 +180,8 @@ extension GeneratorClient on DBusGeneratorHandler {
     buffer.writeln('late final Stream<${classInfo.className}_${signalInfo.signalName}Signal> ${signalInfo.signal.displayName}Signal;');
 
     buffer.writeln('void ${signalInfo.signal.displayName}SignalInit() {');
-    buffer.writeln('${signalInfo.signal.displayName}Signal = buildSignal("${signalInfo.signalName}", signature: DBusSignature("${signalInfo.argList.join('')}")).map((signal) => ${classInfo.className}_${signalInfo.signalName}Signal(signal));');
+    buffer.writeln(
+        '${signalInfo.signal.displayName}Signal = buildSignal("${signalInfo.signalName}", signature: DBusSignature("${signalInfo.argList.join('')}")).map((signal) => ${classInfo.className}_${signalInfo.signalName}Signal(signal));');
     buffer.writeln('}');
   }
 
@@ -181,6 +207,14 @@ extension GeneratorClient on DBusGeneratorHandler {
     buffer.writeln('}');
   }
 
+  void buildClientLocalPropertyVN(DartType dartType, String name, String signature) {
+    var typeName = dartType.getDisplayString();
+    if (!typeName.endsWith("?")) {
+      typeName += "?";
+    }
+    buffer.writeln('final local_$name = ValueNotifier<$typeName>(null);');
+  }
+
   void buildClientLocalProperty(DartType dartType, String name, String signature) {
     var typeName = dartType.getDisplayString();
     if (!typeName.endsWith("?")) {
@@ -189,7 +223,11 @@ extension GeneratorClient on DBusGeneratorHandler {
     buffer.writeln('$typeName local_$name;');
   }
 
+  void buildClientLocalPropertySetValueVN(String name, String signature) {
+    buffer.writeln('case "$name": local_$name.value = value?${dbusSignatureToNative(signature)}; break;');
+  }
+
   void buildClientLocalPropertySetValue(String name, String signature) {
-    buffer.writeln('case "$name": local_$name = value${dbusSignatureToNative(signature)}; break;');
+    buffer.writeln('case "$name": local_$name = value?${dbusSignatureToNative(signature)}; break;');
   }
 }
