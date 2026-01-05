@@ -87,6 +87,7 @@ extension GeneratorClient on DBusGeneratorHandler {
       }
     }
 
+    buffer.writeln();
     buffer.writeln('@override');
     buffer.writeln('void setValue(String key, DBusValue? value) {');
     if (classInfo.useLog) {
@@ -115,6 +116,25 @@ extension GeneratorClient on DBusGeneratorHandler {
     buffer.writeln('default:');
     buffer.writeln('super.setValue(key, value);');
     buffer.writeln('}');
+    buffer.writeln('}');
+
+    buffer.writeln('@override');
+    buffer.writeln('Future<void> releaseHelper() async {');
+    if (classInfo.useValueNotifier) {
+      for (final p in classInfo.propertyInfoMap.entries) {
+        final propertyInfo = p.value;
+
+        final String propertyName;
+        if (propertyInfo.propertyGetInfo != null) {
+          propertyName = propertyInfo.propertyGetInfo!.propertyName;
+        } else {
+          propertyName = propertyInfo.propertySetInfo!.propertyName;
+        }
+
+        buildClientReleaseVN(propertyName);
+      }
+    }
+    buffer.writeln('await super.releaseHelper();');
     buffer.writeln('}');
 
     buffer.writeln('}');
@@ -229,5 +249,9 @@ extension GeneratorClient on DBusGeneratorHandler {
 
   void buildClientLocalPropertySetValue(String name, String signature) {
     buffer.writeln('case "$name": local_$name = value?${dbusSignatureToNative(signature)}; break;');
+  }
+
+  void buildClientReleaseVN(String name) {
+    buffer.writeln('local_$name.dispose();');
   }
 }
