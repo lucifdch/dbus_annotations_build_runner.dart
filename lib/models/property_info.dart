@@ -10,6 +10,8 @@ class PropertyGeSetInfo {
   late MethodElement property;
   late ConstantReader propertyAnn;
 
+  bool get useValueNotifier => propertyAnn.read('useValueNotifier').boolValue;
+
   String get propertyName => propertyAnn.read('propertyName').stringValue;
 
   String get signature => propertyAnn.read('signature').stringValue;

@@ -17,8 +17,6 @@ class ClassInfo {
 
   bool get useLog => interfaceAnn.read('useLog').boolValue;
 
-  bool get useValueNotifier => interfaceAnn.read('useValueNotifier').boolValue;
-
   List<String> get buildList => interfaceAnn.read('buildList').listValue.map((i) => i.getField('_name')!.toStringValue()!).toList();
 
   final methodInfoList = <MethodInfo>[];

@@ -87,6 +87,21 @@ class DBusGeneratorHandler {
           ..property = method
           ..propertyAnn = ConstantReader(propertySetAnn);
       }
+
+      // 检测get于set属性签名是否相等
+      for (final kv in classInfo.propertyInfoMap.entries) {
+        if (kv.value.propertyGetInfo != null && kv.value.propertySetInfo != null) {
+          //
+          if (kv.value.propertyGetInfo!.useValueNotifier != kv.value.propertySetInfo!.useValueNotifier) {
+            throw StateError('property "${kv.key}" useValueNotifier not equal, get is (${kv.value.propertyGetInfo!.useValueNotifier}); set is (${kv.value.propertySetInfo!.useValueNotifier}).');
+          }
+
+          //
+          if (kv.value.propertyGetInfo!.signature != kv.value.propertySetInfo!.signature) {
+            throw StateError('property "${kv.key}" signature not equal, get is (${kv.value.propertyGetInfo!.signature}); set is (${kv.value.propertySetInfo!.signature}).');
+          }
+        }
+      }
     }
   }
 

@@ -107,7 +107,8 @@ extension GeneratorService on DBusGeneratorHandler {
   }
 
   void buildServiceHandleMethodCall() {
-    buffer.writeln('static Future<DBusMethodResponse> handleMethodCall(${classInfo.className} instance, DBusMethodCall methodCall, {DBusMethodErrorResponse? Function(Object e, StackTrace s)? interceptError}) async {');
+    buffer.writeln(
+        'static Future<DBusMethodResponse> handleMethodCall(${classInfo.className} instance, DBusMethodCall methodCall, {DBusMethodErrorResponse? Function(Object e, StackTrace s)? interceptError}) async {');
     if (classInfo.useLog) {
       buffer.writeln('${classInfo.className}_Log.trace("handleMethodCall -> \$methodCall");');
     }
@@ -169,7 +170,9 @@ extension GeneratorService on DBusGeneratorHandler {
 
   void buildServiceGetProperty() {
     buffer.writeln('static Future<DBusMethodResponse> getProperty(${classInfo.className} instance, String ifaceName, String name) async {');
-    buffer.writeln('${classInfo.className}_Log.trace("getProperty -> \$ifaceName \$name");');
+    if (classInfo.useLog) {
+      buffer.writeln('${classInfo.className}_Log.trace("getProperty -> \$ifaceName \$name");');
+    }
     buffer.writeln();
     buffer.writeln('if (ifaceName != ${classInfo.className}_InterfaceName) {');
     buffer.writeln('return DBusMethodErrorResponse.unknownInterface(ifaceName);');
@@ -256,7 +259,9 @@ extension GeneratorService on DBusGeneratorHandler {
 
   void buildServiceGetAllProperty() {
     buffer.writeln('static Future<DBusMethodResponse> getAllProperties(${classInfo.className} instance, String ifaceName) async {');
-    buffer.writeln('${classInfo.className}_Log.trace("getAllProperties -> \$ifaceName");');
+    if (classInfo.useLog) {
+      buffer.writeln('${classInfo.className}_Log.trace("getAllProperties -> \$ifaceName");');
+    }
     buffer.writeln();
     buffer.writeln('if (ifaceName != ${classInfo.className}_InterfaceName) {');
     buffer.writeln('return DBusMethodErrorResponse.unknownInterface(ifaceName);');
@@ -282,7 +287,11 @@ extension GeneratorService on DBusGeneratorHandler {
     buffer.writeln('try {');
     buffer.writeln('allProperties["$propertyName"] = ${nativeToDBusValue('(await instance.${propertyInfo.propertyGetInfo!.property.displayName}())', propertyInfo.propertyGetInfo!.signature)};');
     buffer.writeln('} catch (e, s) {');
-    buffer.writeln('${classInfo.className}_Log.warning("Error getting property -> $propertyName", e, s);');
+    if (classInfo.useLog) {
+      buffer.writeln('${classInfo.className}_Log.warning("Error getting property -> $propertyName", e, s);');
+    } else {
+      buffer.writeln('// get property $propertyName fail.');
+    }
     buffer.writeln('}');
   }
 }
