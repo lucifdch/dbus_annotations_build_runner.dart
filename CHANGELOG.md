@@ -18,3 +18,7 @@
 ## 0.1.4
 
 - Change set value add ValueNotifier to Property
+
+## 0.1.5
+
+- Refactoring code structure

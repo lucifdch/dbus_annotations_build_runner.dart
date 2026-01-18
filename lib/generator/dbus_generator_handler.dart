@@ -9,8 +9,9 @@ import '../models/method_info.dart';
 import '../models/property_info.dart';
 import '../models/signal_info.dart';
 
-part 'generator_client.dart';
-part 'generator_service.dart';
+part 'generator_client_helper.dart';
+part 'generator_client_local_properties.dart';
+part 'generator_service_helper.dart';
 
 const annotationsPackage = 'package:dbus_annotations/src/annotations.dart';
 
@@ -38,6 +39,7 @@ class DBusGeneratorHandler {
 
     if (buildList.contains('client')) {
       buildClientHelper();
+      buildClientLocalProperties();
     }
 
     if (buildList.contains('service')) {

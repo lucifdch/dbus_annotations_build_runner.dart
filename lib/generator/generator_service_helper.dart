@@ -1,6 +1,6 @@
 part of 'dbus_generator_handler.dart';
 
-extension GeneratorService on DBusGeneratorHandler {
+extension GeneratorServiceHelper on DBusGeneratorHandler {
   void buildServiceHelper() {
     buffer.writeln('// =========================');
     buffer.writeln('// 服务对象 (Service)');
