@@ -8,6 +8,8 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
       buffer.writeln('// =========================');
       buffer.writeln('class ${classInfo.className}_ClientLocalProperties extends DBusClientLocalProperties {');
 
+      bool isUseValueNotifier = false;
+
       for (final p in classInfo.propertyInfoMap.entries) {
         final propertyInfo = p.value;
 
@@ -31,6 +33,7 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
 
         if (useValueNotifier) {
           buildClientLocalPropertyVN(dartType, propertyName, signature);
+          isUseValueNotifier = true;
         } else {
           buildClientLocalProperty(dartType, propertyName, signature);
         }
@@ -38,7 +41,7 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
 
       buffer.writeln();
       buffer.writeln('@override');
-      buffer.writeln('void setValue(String key, DBusValue? value) {');
+      buffer.writeln('bool setValue(String key, DBusValue? value) {');
       if (classInfo.useLog) {
         buffer.writeln('${classInfo.className}_Log.trace("setValue -> key: \$key value: \$value");');
         buffer.writeln();
@@ -67,35 +70,37 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
         }
       }
       buffer.writeln('default:');
-      buffer.writeln('super.setValue(key, value);');
+      buffer.writeln('return super.setValue(key, value);');
       buffer.writeln('}');
       buffer.writeln('}');
 
-      buffer.writeln('@override');
-      buffer.writeln('void release() {');
-      if (classInfo.useLog) {
-        buffer.writeln('${classInfo.className}_Log.trace("release");');
-        buffer.writeln();
-      }
-
-      for (final p in classInfo.propertyInfoMap.entries) {
-        final propertyInfo = p.value;
-
-        final String propertyName;
-        final bool useValueNotifier;
-        if (propertyInfo.propertyGetInfo != null) {
-          propertyName = propertyInfo.propertyGetInfo!.propertyName;
-          useValueNotifier = propertyInfo.propertyGetInfo!.useValueNotifier;
-        } else {
-          propertyName = propertyInfo.propertySetInfo!.propertyName;
-          useValueNotifier = propertyInfo.propertySetInfo!.useValueNotifier;
+      if (isUseValueNotifier) {
+        buffer.writeln('@override');
+        buffer.writeln('void release() {');
+        if (classInfo.useLog) {
+          buffer.writeln('${classInfo.className}_Log.trace("release");');
+          buffer.writeln();
         }
 
-        if (useValueNotifier) {
-          buildClientReleaseVN(propertyName);
+        for (final p in classInfo.propertyInfoMap.entries) {
+          final propertyInfo = p.value;
+
+          final String propertyName;
+          final bool useValueNotifier;
+          if (propertyInfo.propertyGetInfo != null) {
+            propertyName = propertyInfo.propertyGetInfo!.propertyName;
+            useValueNotifier = propertyInfo.propertyGetInfo!.useValueNotifier;
+          } else {
+            propertyName = propertyInfo.propertySetInfo!.propertyName;
+            useValueNotifier = propertyInfo.propertySetInfo!.useValueNotifier;
+          }
+
+          if (useValueNotifier) {
+            buildClientReleaseVN(propertyName);
+          }
         }
+        buffer.writeln('}');
       }
-      buffer.writeln('}');
 
       buffer.writeln('}');
     }
@@ -118,11 +123,23 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
   }
 
   void buildClientLocalPropertySetValueVN(String name, String signature) {
-    buffer.writeln('case "$name": ${name}_ValueNotifier.value = value?${dbusSignatureToNative(signature)}; break;');
+    buffer.writeln('case "$name":');
+    buffer.writeln('final newValue = value?${dbusSignatureToNative(signature)};');
+    buffer.writeln('final isUpdated = ${name}_ValueNotifier.value != newValue;');
+    buffer.writeln('if (isUpdated) {');
+    buffer.writeln('${name}_ValueNotifier.value = newValue;');
+    buffer.writeln('}');
+    buffer.writeln('return isUpdated;');
   }
 
   void buildClientLocalPropertySetValue(String name, String signature) {
-    buffer.writeln('case "$name": $name = value?${dbusSignatureToNative(signature)}; break;');
+    buffer.writeln('case "$name":');
+    buffer.writeln('final newValue = value?${dbusSignatureToNative(signature)};');
+    buffer.writeln('final isUpdated = $name != newValue;');
+    buffer.writeln('if (isUpdated) {');
+    buffer.writeln('$name = newValue;');
+    buffer.writeln('}');
+    buffer.writeln('return isUpdated;');
   }
 
   void buildClientReleaseVN(String name) {

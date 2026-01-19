@@ -16,7 +16,21 @@ extension GeneratorClientHelper on DBusGeneratorHandler {
     buffer.writeln('// 调用对象 (Client)');
     buffer.writeln('// =========================');
     buffer.writeln('class ${classInfo.className}_ClientHelper extends DBusClientHelper implements ${classInfo.className} {');
-    buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject) : super(interfaceName: ${classInfo.className}_InterfaceName);');
+
+    if (classInfo.propertyInfoMap.isNotEmpty && classInfo.useLocalProperties) {
+      buffer.writeln('final ${classInfo.className}_ClientLocalProperties _localProperties;');
+      buffer.writeln();
+
+      buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject, {${classInfo.className}_ClientLocalProperties? localProperties})');
+      buffer.writeln(': _localProperties = localProperties ?? ${classInfo.className}_ClientLocalProperties(),');
+      buffer.writeln('super(interfaceName: ${classInfo.className}_InterfaceName);');
+      buffer.writeln();
+
+      buffer.writeln('@override');
+      buffer.writeln('${classInfo.className}_ClientLocalProperties get localProperties => _localProperties;');
+    } else {
+      buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject) : super(interfaceName: ${classInfo.className}_InterfaceName);');
+    }
 
     if (classInfo.methodInfoList.isNotEmpty) {
       buffer.writeln('// =========================');
@@ -54,15 +68,6 @@ extension GeneratorClientHelper on DBusGeneratorHandler {
           buildClientProperty_Set(propertyInfo.propertySetInfo!);
         }
       }
-    }
-
-    if (classInfo.propertyInfoMap.isNotEmpty && classInfo.useLocalProperties) {
-      buffer.writeln('final _localProperties = ${classInfo.className}_ClientLocalProperties();');
-      buffer.writeln('@override');
-      buffer.writeln('${classInfo.className}_ClientLocalProperties get localProperties => _localProperties;');
-    } else {
-      buffer.writeln('@override');
-      buffer.writeln('DBusClientLocalProperties? get localProperties => null;');
     }
 
     buffer.writeln('}');

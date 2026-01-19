@@ -22,3 +22,7 @@
 ## 0.1.5
 
 - Refactoring code structure
+
+## 0.1.6
+
+- Refactoring code structure
