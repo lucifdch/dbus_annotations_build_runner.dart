@@ -17,20 +17,17 @@ extension GeneratorClientHelper on DBusGeneratorHandler {
     buffer.writeln('// =========================');
     buffer.writeln('class ${classInfo.className}_ClientHelper extends DBusClientHelper implements ${classInfo.className} {');
 
-    if (classInfo.propertyInfoMap.isNotEmpty && classInfo.useLocalProperties) {
-      buffer.writeln('final ${classInfo.className}_ClientLocalProperties _localProperties;');
-      buffer.writeln();
+    final useDefaultLocalProperties = (classInfo.propertyInfoMap.isNotEmpty && classInfo.useLocalProperties);
+    buffer.writeln('final DBusClientLocalProperties${useDefaultLocalProperties ? '' : '?'} _localProperties;');
+    buffer.writeln();
 
-      buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject, {${classInfo.className}_ClientLocalProperties? localProperties})');
-      buffer.writeln(': _localProperties = localProperties ?? ${classInfo.className}_ClientLocalProperties(),');
-      buffer.writeln('super(interfaceName: ${classInfo.className}_InterfaceName);');
-      buffer.writeln();
+    buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject, {DBusClientLocalProperties? localProperties})');
+    buffer.writeln(': _localProperties = localProperties ${useDefaultLocalProperties ? '?? ${classInfo.className}_ClientLocalProperties()' : ''},');
+    buffer.writeln('super(interfaceName: ${classInfo.className}_InterfaceName);');
+    buffer.writeln();
 
-      buffer.writeln('@override');
-      buffer.writeln('${classInfo.className}_ClientLocalProperties get localProperties => _localProperties;');
-    } else {
-      buffer.writeln('${classInfo.className}_ClientHelper(super.remoteObject) : super(interfaceName: ${classInfo.className}_InterfaceName);');
-    }
+    buffer.writeln('@override');
+    buffer.writeln('DBusClientLocalProperties${useDefaultLocalProperties ? '' : '?'} get localProperties => _localProperties;');
 
     if (classInfo.methodInfoList.isNotEmpty) {
       buffer.writeln('// =========================');

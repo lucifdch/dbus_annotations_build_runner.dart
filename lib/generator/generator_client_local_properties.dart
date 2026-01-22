@@ -74,6 +74,30 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
       buffer.writeln('}');
       buffer.writeln('}');
 
+      buffer.writeln('@override');
+      buffer.writeln('Object? getValue(String key) => switch (key) {');
+      for (final p in classInfo.propertyInfoMap.entries) {
+        final propertyInfo = p.value;
+
+        final String propertyName;
+        final bool useValueNotifier;
+        if (propertyInfo.propertyGetInfo != null) {
+          propertyName = propertyInfo.propertyGetInfo!.propertyName;
+          useValueNotifier = propertyInfo.propertyGetInfo!.useValueNotifier;
+        } else {
+          propertyName = propertyInfo.propertySetInfo!.propertyName;
+          useValueNotifier = propertyInfo.propertySetInfo!.useValueNotifier;
+        }
+
+        if (useValueNotifier) {
+          buildClientLocalPropertyGetValueVN(propertyName);
+        } else {
+          buildClientLocalPropertyGetValue(propertyName);
+        }
+      }
+      buffer.writeln('_ => super.getValue(key),');
+      buffer.writeln('};');
+
       if (isUseValueNotifier) {
         buffer.writeln('@override');
         buffer.writeln('void release() {');
@@ -140,6 +164,14 @@ extension GeneratorClientLocalProperties on DBusGeneratorHandler {
     buffer.writeln('$name = newValue;');
     buffer.writeln('}');
     buffer.writeln('return isUpdated;');
+  }
+
+  void buildClientLocalPropertyGetValueVN(String name) {
+    buffer.writeln('"$name" => ${name}_ValueNotifier.value,');
+  }
+
+  void buildClientLocalPropertyGetValue(String name) {
+    buffer.writeln('"$name" => $name,');
   }
 
   void buildClientReleaseVN(String name) {
